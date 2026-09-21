@@ -3,336 +3,218 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Glasswort — skin reading</title>
+<title>Smart Mirror — Skin Condition Detection</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,450;9..144,560&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #EDEEE7;
-    --panel: #FBFAF6;
-    --panel-2: #F3F1E9;
-    --ink: #223229;
-    --ink-soft: #55645A;
-    --line: #D3D6C9;
-    --sage: #7C9483;
-    --amber: #B2823E;
-    --amber-deep: #8C6329;
-    --amber-glass-a: #E7C486;
-    --amber-glass-b: #B2823E;
-    --danger: #A85A46;
-    --radius: 3px;
+    --bg: #17140F;
+    --bg-2: #1D1A14;
+    --panel: #1F1C16;
+    --panel-2: #26221A;
+    --ink: #EFEAE0;
+    --ink-soft: #A69C8A;
+    --line: #35301F;
+    --brass: #C9974B;
+    --brass-lo: #8C6B33;
+    --brass-glow: rgba(201,151,75,0.35);
+    --good: #7FA383;
+    --warn: #C98B4B;
+    --bad: #B96555;
+    --radius: 4px;
     box-sizing: border-box;
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
-  :root:not([data-theme="light"]) {
-    @media (prefers-color-scheme: dark) {
-      --bg: #131C16;
-      --panel: #182219;
-      --panel-2: #1E2A1F;
-      --ink: #E9EAE1;
-      --ink-soft: #9BA79C;
-      --line: #2C3A2C;
-      --amber-glass-a: #D8B570;
-      --amber-glass-b: #96702F;
-    }
+  :root[data-theme="light"] {
+    --bg: #F1ECE1;
+    --bg-2: #EAE3D3;
+    --panel: #FBF8F0;
+    --panel-2: #F2ECDD;
+    --ink: #29241A;
+    --ink-soft: #7A705C;
+    --line: #DED2B4;
   }
-  :root[data-theme="dark"] {
-    --bg: #131C16;
-    --panel: #182219;
-    --panel-2: #1E2A1F;
-    --ink: #E9EAE1;
-    --ink-soft: #9BA79C;
-    --line: #2C3A2C;
-    --amber-glass-a: #D8B570;
-    --amber-glass-b: #96702F;
-  }
-  html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
+  html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
   * { box-sizing: border-box; }
   body {
-    height: 100%;
-    margin: 0;
-    background: var(--bg);
+    height: 100%; margin: 0;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(201,151,75,0.10), transparent 60%),
+      var(--bg);
     color: var(--ink);
     font-family: 'Inter', -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
-  .wrap {
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 28px 20px 48px;
-  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 26px 20px 56px; }
+
   header.top {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 22px;
-    padding-bottom: 18px;
-    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--line);
   }
-  .mark {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
+  .mark { display: flex; align-items: center; gap: 10px; }
+  .ring-mini {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--brass); position: relative; flex: none;
   }
-  .mark .dot {
-    width: 9px; height: 9px; border-radius: 50%;
-    background: var(--amber);
-    display: inline-block;
-    transform: translateY(-2px);
+  .ring-mini::after {
+    content: ''; position: absolute; inset: -4px; border-radius: 50%;
+    border: 1px solid var(--brass-lo); opacity: .5;
   }
   h1 {
-    font-family: 'Fraunces', serif;
-    font-optical-sizing: auto;
-    font-weight: 500;
-    font-size: clamp(22px, 3vw, 28px);
-    margin: 0;
-    letter-spacing: -0.01em;
+    font-family: 'Fraunces', serif; font-weight: 560; font-size: clamp(20px,2.6vw,25px);
+    margin: 0; letter-spacing: -0.01em;
   }
-  .tagline {
-    color: var(--ink-soft);
-    font-size: 13.5px;
-    max-width: 260px;
-    text-align: right;
-    line-height: 1.5;
-  }
-  .stage {
-    display: grid;
-    grid-template-columns: 1.1fr 1fr;
-    gap: 20px;
-    align-items: start;
-  }
-  @media (max-width: 860px) {
-    .stage { grid-template-columns: 1fr; }
-    .tagline { display: none; }
-  }
+  h1 small { display: block; font-family: 'Inter'; font-weight: 500; font-size: 11.5px; color: var(--ink-soft); letter-spacing: 0.02em; margin-top: 2px; }
 
-  /* ---- Left: live view ---- */
-  .scan-panel {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    overflow: hidden;
+  .tabs { display: flex; gap: 6px; background: var(--panel-2); padding: 4px; border-radius: 20px; border: 1px solid var(--line); }
+  .tabs button {
+    border: none; background: transparent; color: var(--ink-soft);
+    font-family: inherit; font-size: 12.5px; font-weight: 600;
+    padding: 7px 14px; border-radius: 16px; cursor: pointer; transition: all .15s ease;
   }
-  .panel-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 13px 16px;
-    border-bottom: 1px solid var(--line);
-    font-size: 12.5px;
-    color: var(--ink-soft);
-  }
-  .live-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--ink-soft);
-    display: inline-block;
-    margin-right: 6px;
-  }
-  .live-dot.on { background: #6B9A6F; box-shadow: 0 0 0 3px rgba(107,154,111,0.18); }
+  .tabs button.active { background: var(--brass); color: #1A1408; }
 
-  .video-frame {
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .stage { display: grid; grid-template-columns: 0.95fr 1.15fr; gap: 20px; align-items: start; }
+  @media (max-width: 880px) { .stage { grid-template-columns: 1fr; } }
+
+  /* ===== LEFT: mirror ===== */
+  .mirror-col { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .mirror-shell {
     position: relative;
-    aspect-ratio: 4 / 5;
-    background: #0E1510;
-    overflow: hidden;
+    width: min(100%, 340px);
+    aspect-ratio: 3 / 4;
+    border-radius: 46% 46% 44% 44% / 40% 40% 44% 44%;
+    padding: 14px;
+    background: linear-gradient(160deg, #3a2f1c, #16130c 60%);
+    box-shadow: 0 18px 40px -14px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(201,151,75,0.18);
   }
-  video {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    transform: scaleX(-1);
-    display: block;
+  .mirror-shell.scanning { box-shadow: 0 18px 46px -12px rgba(0,0,0,0.6), 0 0 0 3px var(--brass-glow), inset 0 0 0 1px rgba(201,151,75,0.4); }
+  .stud {
+    position: absolute; width: 6px; height: 6px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #F3D9A6, var(--brass-lo));
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.25);
+    opacity: 0.55; transition: opacity .3s ease, box-shadow .3s ease;
   }
-  canvas.overlay {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-  }
-  .video-empty {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 14px; color: #C9CFC6; text-align: center; padding: 24px;
-  }
-  .video-empty svg { opacity: 0.55; }
-  .video-empty p { max-width: 240px; font-size: 13.5px; line-height: 1.55; margin: 0; color: #9FAA9A; }
+  .mirror-shell.scanning .stud { opacity: 1; box-shadow: 0 0 8px 2px var(--brass-glow); }
 
-  .scan-controls {
-    display: flex; align-items: center; gap: 10px;
-    padding: 14px 16px;
-    border-top: 1px solid var(--line);
+  .glass {
+    position: relative; width: 100%; height: 100%;
+    border-radius: 42% 42% 40% 40% / 36% 36% 40% 40%;
+    overflow: hidden; background: #050503;
   }
-  button {
-    font-family: inherit;
-    font-size: 13.5px;
-    font-weight: 600;
-    border-radius: var(--radius);
-    border: 1px solid transparent;
-    padding: 10px 16px;
-    cursor: pointer;
-    transition: transform .12s ease, background .15s ease, border-color .15s ease;
+  video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block; }
+  canvas.overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .sweep {
+    position: absolute; left: 0; right: 0; top: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--brass) 20%, var(--brass) 80%, transparent);
+    box-shadow: 0 0 14px 2px var(--brass-glow); opacity: 0;
   }
-  button:active { transform: scale(0.98); }
-  button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
-  .btn-primary {
-    background: var(--ink);
-    color: var(--panel);
-  }
-  .btn-primary:hover { background: var(--amber-deep); }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-ghost {
-    background: transparent;
-    border-color: var(--line);
-    color: var(--ink-soft);
-  }
-  .btn-ghost:hover { border-color: var(--ink-soft); color: var(--ink); }
-  .status-line {
-    font-size: 12px; color: var(--ink-soft); margin-left: auto; text-align: right;
-  }
+  .sweep.run { animation: sweepdown 1150ms cubic-bezier(.65,0,.35,1); }
+  @keyframes sweepdown { 0% { top:0; opacity:1; } 92% { opacity:1; } 100% { top:100%; opacity:0; } }
 
-  /* ---- Right: reading ---- */
-  .read-panel {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    min-height: 100%;
+  .glass-empty {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; padding: 26px; text-align: center; color: #8C8574;
   }
-  .empty-state {
-    padding: 60px 28px;
-    text-align: center;
-  }
-  .empty-state p {
-    color: var(--ink-soft);
-    font-size: 13.5px;
-    max-width: 280px;
-    margin: 10px auto 0;
-    line-height: 1.6;
-  }
-  .empty-state .glyph {
-    font-family: 'Fraunces', serif;
-    font-size: 34px;
-    color: var(--line);
-  }
+  .glass-empty svg { opacity: .5; }
+  .glass-empty p { font-size: 12.5px; line-height: 1.55; margin: 0; max-width: 200px; }
 
-  .results { padding: 4px 0; display: none; }
-  .results.show { display: block; }
+  .status-strip { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-soft); }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-soft); }
+  .live-dot.on { background: var(--good); box-shadow: 0 0 0 3px rgba(127,163,131,0.2); }
+  .sep { color: var(--line); }
 
-  .verdict {
-    padding: 20px 20px 16px;
-    border-bottom: 1px solid var(--line);
+  .mirror-controls { display: flex; gap: 10px; width: 100%; max-width: 340px; }
+  button.act {
+    flex: 1; font-family: inherit; font-size: 13px; font-weight: 600;
+    border-radius: var(--radius); border: 1px solid transparent; padding: 11px 14px; cursor: pointer;
+    transition: transform .12s ease, opacity .15s ease;
   }
-  .verdict .eyebrow { font-size: 12px; color: var(--ink-soft); margin-bottom: 6px; }
-  .verdict h2 {
-    font-family: 'Fraunces', serif;
-    font-weight: 500;
-    font-size: 23px;
-    margin: 0 0 8px;
+  button.act:active { transform: scale(0.98); }
+  .act-primary { background: var(--brass); color: #1A1408; }
+  .act-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+  .act-ghost { background: transparent; border-color: var(--line); color: var(--ink-soft); }
+  .act-ghost:hover { border-color: var(--brass-lo); color: var(--ink); }
+
+  /* ===== RIGHT: readout ===== */
+  .readout {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
   }
+  .ro-empty { padding: 70px 30px; text-align: center; }
+  .ro-empty .glyph { font-family: 'Fraunces', serif; font-size: 15px; color: var(--brass); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
+  .ro-empty p { color: var(--ink-soft); font-size: 13.5px; max-width: 280px; margin: 0 auto; line-height: 1.6; }
+
+  .ro-results { display: none; }
+  .ro-results.show { display: block; }
+
+  .score-block {
+    display: flex; align-items: center; gap: 18px;
+    padding: 22px 22px 18px; border-bottom: 1px solid var(--line);
+  }
+  .score-ring { position: relative; width: 92px; height: 92px; flex: none; }
+  .score-ring svg { transform: rotate(-90deg); }
+  .score-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+  .score-num b { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 560; }
+  .score-num span { font-size: 9.5px; color: var(--ink-soft); letter-spacing: .05em; }
+  .score-text .eyebrow { font-size: 11.5px; color: var(--ink-soft); margin-bottom: 4px; }
+  .score-text h2 { font-family: 'Fraunces', serif; font-weight: 560; font-size: 20px; margin: 0 0 8px; }
   .concern-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-  .tag {
-    font-size: 11.5px;
-    padding: 4px 9px;
-    border-radius: 20px;
-    border: 1px solid var(--line);
-    color: var(--ink-soft);
-  }
+  .tag { font-size: 11px; padding: 3px 9px; border-radius: 20px; border: 1px solid var(--line); color: var(--ink-soft); }
 
-  .metrics { padding: 18px 20px; border-bottom: 1px solid var(--line); }
-  .metrics-title { font-size: 12px; color: var(--ink-soft); margin-bottom: 14px; }
-  .metric-row {
-    display: grid;
-    grid-template-columns: 30px 90px 1fr 34px;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-  }
+  .metrics { padding: 18px 22px; border-bottom: 1px solid var(--line); }
+  .metrics-title { font-size: 11.5px; color: var(--ink-soft); margin-bottom: 13px; text-transform: uppercase; letter-spacing: .04em; }
+  .metric-row { display: grid; grid-template-columns: 108px 1fr 32px; align-items: center; gap: 10px; margin-bottom: 10px; }
   .metric-row:last-child { margin-bottom: 0; }
-  .vial {
-    width: 20px; height: 32px;
-    border: 1.5px solid var(--ink-soft);
-    border-radius: 2px 2px 5px 5px;
-    position: relative;
-    overflow: hidden;
-    background: var(--panel-2);
-    justify-self: center;
-  }
-  .vial::before {
-    content: '';
-    position: absolute; left: 3px; right: 3px; top: -4px;
-    height: 4px;
-    background: var(--ink-soft);
-    border-radius: 1px;
-  }
-  .vial .fill {
-    position: absolute; left: 0; right: 0; bottom: 0;
-    height: 0%;
-    background: linear-gradient(180deg, var(--amber-glass-a), var(--amber-glass-b));
-    transition: height 900ms cubic-bezier(.22,1,.36,1);
-  }
-  .metric-label { font-size: 12.5px; color: var(--ink); }
-  .metric-track {
-    height: 5px; background: var(--panel-2); border-radius: 4px; overflow: hidden;
-    border: 1px solid var(--line);
-  }
-  .metric-fill {
-    height: 100%; width: 0%;
-    background: var(--amber);
-    transition: width 900ms cubic-bezier(.22,1,.36,1);
-  }
-  .metric-val { font-size: 12px; color: var(--ink-soft); text-align: right; font-variant-numeric: tabular-nums; }
+  .metric-label { font-size: 12.5px; }
+  .metric-track { height: 5px; background: var(--panel-2); border-radius: 4px; overflow: hidden; border: 1px solid var(--line); }
+  .metric-fill { height: 100%; width: 0%; border-radius: 4px; transition: width 900ms cubic-bezier(.22,1,.36,1); }
+  .metric-val { font-size: 11.5px; color: var(--ink-soft); text-align: right; font-variant-numeric: tabular-nums; }
 
-  .routine { padding: 18px 20px 20px; }
-  .routine-title { font-size: 12px; color: var(--ink-soft); margin-bottom: 12px; }
-  .product {
-    display: flex; gap: 12px;
-    padding: 12px 0;
-    border-top: 1px solid var(--line);
-  }
+  .routine { padding: 18px 22px 8px; }
+  .routine-title { font-size: 11.5px; color: var(--ink-soft); margin-bottom: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .product { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
   .product:first-child { border-top: none; padding-top: 0; }
   .product-mark {
-    width: 26px; height: 26px; flex: none;
-    border-radius: 50%;
-    background: var(--panel-2);
-    border: 1px solid var(--line);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Fraunces', serif; font-size: 13px; color: var(--amber-deep);
+    width: 28px; height: 28px; flex: none; border-radius: 50%;
+    background: var(--panel-2); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
   }
-  .product h3 {
-    font-size: 13.5px; font-weight: 600; margin: 0 0 3px;
-  }
-  .product p {
-    font-size: 12.5px; color: var(--ink-soft); margin: 0; line-height: 1.5;
-  }
+  .product h3 { font-size: 13px; font-weight: 600; margin: 0 0 3px; }
+  .product p { font-size: 12px; color: var(--ink-soft); margin: 0; line-height: 1.5; }
 
-  .disclaimer {
-    padding: 14px 20px 22px;
-    font-size: 11.5px;
-    color: var(--ink-soft);
-    line-height: 1.6;
-    border-top: 1px solid var(--line);
+  .about-toggle {
+    margin: 6px 22px 0; padding: 11px 0 0;
   }
+  .about-toggle summary { cursor: pointer; font-size: 12px; color: var(--ink-soft); list-style: none; display: flex; align-items: center; gap: 6px; }
+  .about-toggle summary::-webkit-details-marker { display: none; }
+  .about-toggle summary::before { content: '+'; color: var(--brass); font-weight: 700; }
+  .about-toggle[open] summary::before { content: '\2212'; }
+  .about-toggle p { font-size: 11.5px; color: var(--ink-soft); line-height: 1.65; margin: 8px 0 16px; }
 
-  /* scan sweep animation */
-  .sweep {
-    position: absolute; left: 0; right: 0; top: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--amber) 20%, var(--amber) 80%, transparent);
-    box-shadow: 0 0 12px 2px rgba(178,130,62,0.55);
-    opacity: 0;
-  }
-  .sweep.run {
-    animation: sweepdown 1100ms cubic-bezier(.65,0,.35,1);
-  }
-  @keyframes sweepdown {
-    0% { top: 0; opacity: 1; }
-    92% { opacity: 1; }
-    100% { top: 100%; opacity: 0; }
-  }
+  .disclaimer { padding: 12px 22px 22px; font-size: 11px; color: var(--ink-soft); line-height: 1.6; }
+
+  /* ===== HISTORY ===== */
+  .history-wrap { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 6px 0 4px; }
+  .history-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; border-bottom: 1px solid var(--line); }
+  .history-head h2 { font-family: 'Fraunces', serif; font-weight: 560; font-size: 18px; margin: 0; }
+  .history-empty { padding: 60px 30px; text-align: center; color: var(--ink-soft); font-size: 13px; }
+  .h-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 22px; border-top: 1px solid var(--line); }
+  .h-item:first-of-type { border-top: none; }
+  .h-left { display: flex; flex-direction: column; gap: 2px; }
+  .h-date { font-size: 12.5px; }
+  .h-tag { font-size: 11px; color: var(--ink-soft); }
+  .h-score { font-family: 'Fraunces', serif; font-size: 18px; }
+  .btn-clear { background: transparent; border: 1px solid var(--line); color: var(--ink-soft); font-family: inherit; font-size: 12px; padding: 7px 12px; border-radius: var(--radius); cursor: pointer; }
+  .btn-clear:hover { border-color: var(--bad); color: var(--bad); }
 
   @media (prefers-reduced-motion: reduce) {
     .sweep.run { animation: none; }
-    .vial .fill, .metric-fill { transition: none; }
+    .metric-fill { transition: none; }
   }
 </style>
 </head>
@@ -341,67 +223,99 @@
 
   <header class="top">
     <div class="mark">
-      <span class="dot"></span>
-      <h1>Glasswort</h1>
+      <span class="ring-mini"></span>
+      <h1>Smart Mirror<small>Camera-based skin condition read &amp; care suggestions</small></h1>
     </div>
-    <p class="tagline">A quick, camera-based read of your skin, with a few suggestions worth trying next.</p>
+    <div class="tabs">
+      <button class="active" id="tabLive" onclick="showView('live')">Live scan</button>
+      <button id="tabHistory" onclick="showView('history')">History</button>
+    </div>
   </header>
 
-  <div class="stage">
+  <!-- LIVE VIEW -->
+  <div class="view active" id="view-live">
+    <div class="stage">
 
-    <!-- LEFT: camera -->
-    <section class="scan-panel">
-      <div class="panel-head">
-        <span><span class="live-dot" id="liveDot"></span><span id="liveLabel">Camera off</span></span>
-        <span id="faceLabel">No face in frame</span>
-      </div>
-      <div class="video-frame" id="videoFrame">
-        <video id="video" playsinline autoplay muted></video>
-        <canvas class="overlay" id="overlay"></canvas>
-        <div class="sweep" id="sweep"></div>
-        <div class="video-empty" id="videoEmpty">
-          <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          <p id="videoEmptyText">Turn on your camera to line your face up in frame. Nothing you show here leaves your device.</p>
-        </div>
-      </div>
-      <div class="scan-controls">
-        <button class="btn-primary" id="camBtn">Turn on camera</button>
-        <button class="btn-ghost" id="scanBtn" disabled>Read my skin</button>
-        <span class="status-line" id="statusLine"></span>
-      </div>
-    </section>
-
-    <!-- RIGHT: reading -->
-    <section class="read-panel">
-      <div class="empty-state" id="emptyState">
-        <div class="glyph">&mdash;</div>
-        <p>Nothing to read yet. Turn on your camera, line up your face in the frame, and take a reading.</p>
-      </div>
-
-      <div class="results" id="results">
-        <div class="verdict">
-          <div class="eyebrow">Reading, just now</div>
-          <h2 id="verdictTitle">Balanced</h2>
-          <div class="concern-tags" id="concernTags"></div>
+      <div class="mirror-col">
+        <div class="mirror-shell" id="mirrorShell">
+          <div class="glass">
+            <video id="video" playsinline autoplay muted></video>
+            <canvas class="overlay" id="overlay"></canvas>
+            <div class="sweep" id="sweep"></div>
+            <div class="glass-empty" id="glassEmpty">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <p id="glassEmptyText">Turn on your camera to step in front of the mirror. Everything stays on your device.</p>
+            </div>
+          </div>
         </div>
 
-        <div class="metrics">
-          <div class="metrics-title">What the camera picked up</div>
-          <div id="metricRows"></div>
+        <div class="status-strip">
+          <span class="live-dot" id="liveDot"></span>
+          <span id="liveLabel">Camera off</span>
+          <span class="sep">&middot;</span>
+          <span id="faceLabel">No face in frame</span>
         </div>
 
-        <div class="routine">
-          <div class="routine-title">Worth trying</div>
-          <div id="productList"></div>
-        </div>
-
-        <div class="disclaimer">
-          This reading comes from an on-device color and light estimate, not a clinical exam — think of it as a rough starting point, not a diagnosis. For anything persistent (breakouts, pain, sudden changes), a dermatologist is the right call.
+        <div class="mirror-controls">
+          <button class="act act-ghost" id="camBtn">Turn on camera</button>
+          <button class="act act-primary" id="scanBtn" disabled>Read my skin</button>
         </div>
       </div>
-    </section>
 
+      <section class="readout">
+        <div class="ro-empty" id="roEmpty">
+          <div class="glyph">Awaiting reading</div>
+          <p>Turn on the camera, centre your face in the mirror, then take a reading. Results land here.</p>
+        </div>
+
+        <div class="ro-results" id="roResults">
+          <div class="score-block">
+            <div class="score-ring">
+              <svg width="92" height="92" viewBox="0 0 92 92">
+                <circle cx="46" cy="46" r="40" fill="none" stroke="var(--panel-2)" stroke-width="7"/>
+                <circle id="scoreArc" cx="46" cy="46" r="40" fill="none" stroke="var(--brass)" stroke-width="7" stroke-linecap="round" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+              </svg>
+              <div class="score-num"><b id="scoreNum">0</b><span>SKIN SCORE</span></div>
+            </div>
+            <div class="score-text">
+              <div class="eyebrow">Reading, just now</div>
+              <h2 id="verdictTitle">&mdash;</h2>
+              <div class="concern-tags" id="concernTags"></div>
+            </div>
+          </div>
+
+          <div class="metrics">
+            <div class="metrics-title">Conditions detected</div>
+            <div id="metricRows"></div>
+          </div>
+
+          <div class="routine">
+            <div class="routine-title">Suggested care</div>
+            <div id="productList"></div>
+          </div>
+
+          <details class="about-toggle">
+            <summary>How this reading works</summary>
+            <p>This browser demo estimates acne-like redness clusters, dark-spot patches, fine-line texture, and oil/dryness balance from colour and light in the camera image &mdash; a lightweight stand-in for the CNN-based detector described in the project this mirror is based on, which would be trained on labelled skin images for higher accuracy. Nothing is uploaded; all of this runs on your device.</p>
+          </details>
+
+          <div class="disclaimer">Not a medical device and not a dermatological diagnosis. For persistent acne, changing moles, pain, or anything that concerns you, see a dermatologist.</div>
+        </div>
+      </section>
+    </div>
   </div>
+
+  <!-- HISTORY VIEW -->
+  <div class="view" id="view-history">
+    <div class="history-wrap">
+      <div class="history-head">
+        <h2>Past readings</h2>
+        <button class="btn-clear" id="clearHistoryBtn">Clear history</button>
+      </div>
+      <div id="historyList"></div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -414,52 +328,59 @@
   const liveDot = document.getElementById('liveDot');
   const liveLabel = document.getElementById('liveLabel');
   const faceLabel = document.getElementById('faceLabel');
-  const videoEmpty = document.getElementById('videoEmpty');
-  const videoEmptyText = document.getElementById('videoEmptyText');
-  const statusLine = document.getElementById('statusLine');
+  const glassEmpty = document.getElementById('glassEmpty');
+  const glassEmptyText = document.getElementById('glassEmptyText');
   const sweep = document.getElementById('sweep');
-  const emptyState = document.getElementById('emptyState');
-  const results = document.getElementById('results');
+  const mirrorShell = document.getElementById('mirrorShell');
+  const roEmpty = document.getElementById('roEmpty');
+  const roResults = document.getElementById('roResults');
 
-  let stream = null;
-  let detecting = false;
-  let box = null;            // smoothed {x,y,w,h} in displayed-pixel space (unmirrored)
-  let targetBox = null;
-  let nativeFaceDetector = null;
-  let detectTimer = null;
-  let rafId = null;
+  // ---- tabs ----
+  window.showView = function (name) {
+    document.getElementById('view-live').classList.toggle('active', name === 'live');
+    document.getElementById('view-history').classList.toggle('active', name === 'history');
+    document.getElementById('tabLive').classList.toggle('active', name === 'live');
+    document.getElementById('tabHistory').classList.toggle('active', name === 'history');
+    if (name === 'history') renderHistory();
+  };
+
+  // ---- mirror studs (decorative ring lights) ----
+  (function placeStuds() {
+    const n = 12;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+      const cx = 50 + 48 * Math.cos(a), cy = 50 + 48 * Math.sin(a);
+      const s = document.createElement('span');
+      s.className = 'stud';
+      s.style.left = cx + '%'; s.style.top = cy + '%'; s.style.transform = 'translate(-50%,-50%)';
+      s.style.transitionDelay = (i * 30) + 'ms';
+      mirrorShell.appendChild(s);
+    }
+  })();
+
+  let stream = null, detecting = false, box = null, targetBox = null;
+  let nativeFaceDetector = null, detectTimer = null, rafId = null;
 
   if ('FaceDetector' in window) {
-    try { nativeFaceDetector = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 1 }); }
-    catch (e) { nativeFaceDetector = null; }
+    try { nativeFaceDetector = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 1 }); } catch (e) { nativeFaceDetector = null; }
   }
 
-  function sizeOverlay() {
-    const r = video.getBoundingClientRect();
-    overlay.width = r.width; overlay.height = r.height;
-  }
+  function sizeOverlay() { const r = video.getBoundingClientRect(); overlay.width = r.width; overlay.height = r.height; }
   window.addEventListener('resize', sizeOverlay);
 
   async function startCamera() {
-    statusLine.textContent = 'Requesting camera…';
     try {
       stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 960 }, height: { ideal: 1200 } }, audio: false });
       video.srcObject = stream;
       await video.play();
       sizeOverlay();
-      videoEmpty.style.display = 'none';
-      liveDot.classList.add('on');
-      liveLabel.textContent = 'Camera on';
-      camBtn.textContent = 'Turn off camera';
-      scanBtn.disabled = false;
-      statusLine.textContent = '';
-      detecting = true;
-      detectLoop();
-      renderLoop();
+      glassEmpty.style.display = 'none';
+      liveDot.classList.add('on'); liveLabel.textContent = 'Camera on';
+      camBtn.textContent = 'Turn off camera'; scanBtn.disabled = false;
+      detecting = true; detectLoop(); renderLoop();
     } catch (err) {
-      statusLine.textContent = '';
-      videoEmptyText.textContent = 'Camera access didn\u2019t go through (' + (err && err.name ? err.name : 'permission blocked') + '). Allow camera access for this page, or open this file directly in your browser if you\u2019re in an embedded preview.';
-      videoEmpty.style.display = 'flex';
+      glassEmptyText.textContent = 'Camera access didn\u2019t go through (' + (err && err.name ? err.name : 'permission blocked') + '). Allow camera access, or download this file and open it directly in a browser tab.';
+      glassEmpty.style.display = 'flex';
     }
   }
 
@@ -469,12 +390,11 @@
     if (rafId) cancelAnimationFrame(rafId);
     if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
     video.srcObject = null;
-    liveDot.classList.remove('on');
-    liveLabel.textContent = 'Camera off';
-    camBtn.textContent = 'Turn on camera';
-    scanBtn.disabled = true;
-    videoEmpty.style.display = 'flex';
-    videoEmptyText.textContent = 'Turn on your camera to line your face up in frame. Nothing you show here leaves your device.';
+    liveDot.classList.remove('on'); liveLabel.textContent = 'Camera off';
+    camBtn.textContent = 'Turn on camera'; scanBtn.disabled = true;
+    mirrorShell.classList.remove('scanning');
+    glassEmpty.style.display = 'flex';
+    glassEmptyText.textContent = 'Turn on your camera to step in front of the mirror. Everything stays on your device.';
     faceLabel.textContent = 'No face in frame';
     box = null; targetBox = null;
     octx.clearRect(0, 0, overlay.width, overlay.height);
@@ -482,7 +402,7 @@
 
   camBtn.addEventListener('click', () => { stream ? stopCamera() : startCamera(); });
 
-  // ---- detection ----
+  // ---- face detection ----
   const sampleCanvas = document.createElement('canvas');
   const sctx = sampleCanvas.getContext('2d', { willReadFrequently: true });
   const SW = 96, SH = 120;
@@ -511,12 +431,8 @@
       }
     }
     const ratio = count / (SW * SH);
-    if (ratio < 0.045 || ratio > 0.85) return null; // too little, or background is skin-toned
-    // normalize to 0..1 of frame, mapped from sampled (mirrored) space -> unmirrored display space handled at draw time
-    return {
-      x: minX / SW, y: minY / SH,
-      w: (maxX - minX) / SW, h: (maxY - minY) / SH
-    };
+    if (ratio < 0.045 || ratio > 0.85) return null;
+    return { x: minX / SW, y: minY / SH, w: (maxX - minX) / SW, h: (maxY - minY) / SH };
   }
 
   async function nativeDetect() {
@@ -536,8 +452,7 @@
       targetBox = { x: found.x * r.width, y: found.y * r.height, w: found.w * r.width, h: found.h * r.height };
       faceLabel.textContent = 'Face in frame';
     } else {
-      targetBox = null;
-      faceLabel.textContent = 'No face in frame';
+      targetBox = null; faceLabel.textContent = 'No face in frame';
     }
     detectTimer = setTimeout(detectLoop, 260);
   }
@@ -547,32 +462,24 @@
     if (targetBox) {
       if (!box) box = { ...targetBox };
       const k = 0.22;
-      box.x += (targetBox.x - box.x) * k;
-      box.y += (targetBox.y - box.y) * k;
-      box.w += (targetBox.w - box.w) * k;
-      box.h += (targetBox.h - box.h) * k;
-    } else {
-      box = null;
-    }
+      box.x += (targetBox.x - box.x) * k; box.y += (targetBox.y - box.y) * k;
+      box.w += (targetBox.w - box.w) * k; box.h += (targetBox.h - box.h) * k;
+    } else { box = null; }
     octx.clearRect(0, 0, overlay.width, overlay.height);
     if (box) drawBox(box);
     rafId = requestAnimationFrame(renderLoop);
   }
 
   function drawBox(b) {
-    // mirror x because video is displayed mirrored
     const mx = overlay.width - b.x - b.w;
     const pad = 0.08;
     const x = mx - b.w * pad, y = b.y - b.h * pad, w = b.w * (1 + pad * 2), h = b.h * (1 + pad * 2);
-    octx.strokeStyle = 'rgba(178,130,62,0.95)';
+    octx.strokeStyle = 'rgba(201,151,75,0.95)';
     octx.lineWidth = 1.6;
     const c = Math.min(w, h) * 0.16;
     octx.beginPath();
-    // corner ticks
     [[x,y,1,1],[x+w,y,-1,1],[x,y+h,1,-1],[x+w,y+h,-1,-1]].forEach(([cx,cy,dx,dy]) => {
-      octx.moveTo(cx, cy + c*dy);
-      octx.lineTo(cx, cy);
-      octx.lineTo(cx + c*dx, cy);
+      octx.moveTo(cx, cy + c*dy); octx.lineTo(cx, cy); octx.lineTo(cx + c*dx, cy);
     });
     octx.stroke();
   }
@@ -584,23 +491,21 @@
   function analyze() {
     if (!video.videoWidth) return;
     sweep.classList.remove('run'); void sweep.offsetWidth; sweep.classList.add('run');
-    statusLine.textContent = 'Reading…';
+    mirrorShell.classList.add('scanning');
     scanBtn.disabled = true;
 
     setTimeout(() => {
       const vw = video.videoWidth, vh = video.videoHeight;
       analysisCanvas.width = vw; analysisCanvas.height = vh;
-      actx.save();
-      actx.translate(vw, 0); actx.scale(-1, 1); // unmirror to match natural face orientation
+      actx.save(); actx.translate(vw, 0); actx.scale(-1, 1);
       actx.drawImage(video, 0, 0, vw, vh);
       actx.restore();
 
-      // region to sample: current box mapped back to video pixel space, or center-face fallback
       let rx, ry, rw, rh;
       if (box) {
         const r = video.getBoundingClientRect();
         const sx = vw / r.width, sy = vh / r.height;
-        const mx = overlay.width - box.x - box.w; // unmirrored displayed x
+        const mx = overlay.width - box.x - box.w;
         rx = mx * sx; ry = box.y * sy; rw = box.w * sx; rh = box.h * sy;
       } else {
         rw = vw * 0.42; rh = vh * 0.46; rx = (vw - rw) / 2; ry = vh * 0.16;
@@ -609,136 +514,194 @@
       rw = Math.min(rw, vw - rx); rh = Math.min(rh, vh - ry);
 
       let data;
-      try { data = actx.getImageData(rx, ry, Math.max(1, rw|0), Math.max(1, rh|0)).data; }
+      try { data = actx.getImageData(rx, ry, Math.max(4, rw|0), Math.max(4, rh|0)); }
       catch (e) { data = null; }
 
-      const metrics = computeMetrics(data);
-      renderResults(metrics);
-      statusLine.textContent = '';
+      const m = computeMetrics(data);
+      renderResults(m);
+      saveHistory(m);
+      mirrorShell.classList.remove('scanning');
       scanBtn.disabled = false;
-    }, 950);
+    }, 1000);
   }
 
-  function computeMetrics(data) {
-    if (!data || data.length < 4) {
-      return { brightness: 0.55, redness: 0.3, variance: 0.3, highlight: 0.15, n: 0 };
+  function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+
+  function computeMetrics(imgData) {
+    if (!imgData) {
+      return { acne: 0.25, darkSpot: 0.2, redness: 0.28, fineLines: 0.2, oiliness: 0.25, dryness: 0.25 };
     }
-    let sumR=0,sumG=0,sumB=0,sumLum=0,sumLum2=0,highlight=0,n=0;
-    const step = 4 * 3; // sample every 3rd pixel
+    const { data, width: rw, height: rh } = imgData;
+
+    // pixel-level pass: overall brightness / redness / highlight ratio
+    let sumLum = 0, sumRedness = 0, highlight = 0, n = 0;
+    const step = 4 * 3;
     for (let i = 0; i < data.length; i += step) {
       const r = data[i], g = data[i+1], b = data[i+2];
-      if (r+g+b < 20) continue; // skip near-black (out of frame edges)
+      if (r + g + b < 20) continue;
       const lum = 0.299*r + 0.587*g + 0.114*b;
-      sumR += r; sumG += g; sumB += b; sumLum += lum; sumLum2 += lum*lum;
+      sumLum += lum; sumRedness += (r - (g+b)/2);
       if (lum > 205) highlight++;
       n++;
     }
-    if (!n) return { brightness: 0.55, redness: 0.3, variance: 0.3, highlight: 0.15, n: 0 };
-    const avgR = sumR/n, avgG = sumG/n, avgB = sumB/n;
-    const meanLum = sumLum/n;
-    const variance = Math.max(0, sumLum2/n - meanLum*meanLum);
-    return {
-      brightness: clamp01(meanLum / 235),
-      redness: clamp01((avgR - (avgG+avgB)/2) / 55),
-      variance: clamp01(Math.sqrt(variance) / 42),
-      highlight: clamp01(highlight / n / 0.22),
-      n
-    };
+    if (!n) return { acne: 0.25, darkSpot: 0.2, redness: 0.28, fineLines: 0.2, oiliness: 0.25, dryness: 0.25 };
+    const brightness = sumLum / n / 235;
+    const redness = clamp01((sumRedness / n) / 55);
+    const oiliness = clamp01(highlight / n / 0.22);
+
+    // grid pass: cell stats for spot / dark-patch / texture proxies
+    const GX = 10, GY = 12;
+    const cellW = rw / GX, cellH = rh / GY;
+    const cLum = new Array(GX*GY).fill(0), cRed = new Array(GX*GY).fill(0), cN = new Array(GX*GY).fill(0);
+    for (let y = 0; y < rh; y += 2) {
+      const gy = Math.min(GY - 1, (y / cellH) | 0);
+      for (let x = 0; x < rw; x += 2) {
+        const i = (y * rw + x) * 4;
+        const r = data[i], g = data[i+1], b = data[i+2];
+        if (r + g + b < 20) continue;
+        const gx = Math.min(GX - 1, (x / cellW) | 0);
+        const idx = gy * GX + gx;
+        cLum[idx] += 0.299*r + 0.587*g + 0.114*b;
+        cRed[idx] += (r - (g+b)/2);
+        cN[idx]++;
+      }
+    }
+    const cellLum = [], cellRed = [];
+    let meanLum = 0, meanRed = 0, validCells = 0;
+    for (let i = 0; i < GX*GY; i++) {
+      if (cN[i] > 4) { cellLum[i] = cLum[i]/cN[i]; cellRed[i] = cRed[i]/cN[i]; meanLum += cellLum[i]; meanRed += cellRed[i]; validCells++; }
+      else { cellLum[i] = null; cellRed[i] = null; }
+    }
+    meanLum = validCells ? meanLum/validCells : 128;
+    meanRed = validCells ? meanRed/validCells : 10;
+
+    let acneCells = 0, darkCells = 0, interior = 0, gradSum = 0, gradN = 0;
+    for (let gy = 1; gy < GY-1; gy++) {
+      for (let gx = 1; gx < GX-1; gx++) {
+        const idx = gy*GX+gx;
+        if (cellLum[idx] == null) continue;
+        interior++;
+        if (cellRed[idx] - meanRed > 12 && cellLum[idx] > meanLum - 15) acneCells++;
+        if (cellLum[idx] < meanLum - 28) darkCells++;
+        const right = cellLum[idx+1], down = cellLum[idx+GX];
+        if (right != null) { gradSum += Math.abs(cellLum[idx]-right); gradN++; }
+        if (down != null) { gradSum += Math.abs(cellLum[idx]-down); gradN++; }
+      }
+    }
+    const acne = clamp01((interior ? acneCells/interior : 0) * 2.6);
+    const darkSpot = clamp01((interior ? darkCells/interior : 0) * 2.2);
+    const fineLines = clamp01((gradN ? gradSum/gradN : 6) / 16);
+    const dryness = clamp01((1 - oiliness) * 0.65 + (0.58 - brightness) * 0.9);
+
+    return { acne, darkSpot, redness, fineLines, oiliness, dryness: clamp01(dryness) };
   }
-  function clamp01(v) { return Math.max(0, Math.min(1, v)); }
 
   function renderResults(m) {
-    emptyState.style.display = 'none';
-    results.classList.add('show');
+    roEmpty.style.display = 'none';
+    roResults.classList.add('show');
 
-    // classify
+    const acnePct = Math.round(m.acne*100), darkPct = Math.round(m.darkSpot*100),
+      redPct = Math.round(m.redness*100), linesPct = Math.round(m.fineLines*100),
+      oilPct = Math.round(m.oiliness*100), dryPct = Math.round(m.dryness*100);
+
+    const score = Math.max(38, Math.min(97, Math.round(100 - (acnePct + darkPct + redPct + linesPct) / 4 * 0.85)));
+    document.getElementById('scoreNum').textContent = score;
+    const arc = document.getElementById('scoreArc');
+    const circumference = 251.2;
+    arc.style.strokeDashoffset = circumference;
+    requestAnimationFrame(() => { arc.style.transition = 'stroke-dashoffset 900ms cubic-bezier(.22,1,.36,1)'; arc.style.strokeDashoffset = circumference * (1 - score/100); });
+    arc.style.stroke = score >= 80 ? 'var(--good)' : score >= 60 ? 'var(--brass)' : 'var(--bad)';
+
+    let health = score >= 85 ? 'Looking clear' : score >= 70 ? 'Generally good' : score >= 55 ? 'A few things to watch' : 'Needs some care';
+    document.getElementById('verdictTitle').textContent = health;
+
     const concerns = [];
-    if (m.redness > 0.55) concerns.push('Redness');
-    if (m.variance > 0.55) concerns.push('Uneven texture');
-    if (m.brightness < 0.42) concerns.push('Dullness');
-    if (m.highlight > 0.6) concerns.push('Shine, T-zone');
-    if (m.highlight < 0.18 && m.brightness < 0.55) concerns.push('Tight, dehydrated feel');
-
-    let skinType = 'Balanced';
-    if (m.highlight > 0.58) skinType = 'Oily-leaning';
-    else if (m.highlight < 0.16 && m.brightness < 0.5) skinType = 'Dry-leaning';
-    else if (m.highlight > 0.3 && m.variance > 0.45) skinType = 'Combination';
-
-    document.getElementById('verdictTitle').textContent = skinType;
+    if (acnePct >= 20) concerns.push('Breakout-prone areas');
+    if (darkPct >= 15) concerns.push('Dark spots');
+    if (redPct >= 32) concerns.push('Redness');
+    if (linesPct >= 45) concerns.push('Fine lines');
+    if (oilPct >= 55) concerns.push('Oily zones');
+    if (dryPct >= 55) concerns.push('Dry, tight areas');
     const tagWrap = document.getElementById('concernTags');
     tagWrap.innerHTML = '';
-    (concerns.length ? concerns : ['No major flags today']).forEach(c => {
-      const t = document.createElement('span'); t.className = 'tag'; t.textContent = c;
-      tagWrap.appendChild(t);
+    (concerns.length ? concerns : ['Nothing major flagged']).forEach(c => {
+      const t = document.createElement('span'); t.className = 'tag'; t.textContent = c; tagWrap.appendChild(t);
     });
 
     const rows = [
-      { label: 'Radiance', val: m.brightness },
-      { label: 'Redness', val: m.redness },
-      { label: 'Texture', val: m.variance },
-      { label: 'Shine', val: m.highlight },
+      { label: 'Acne / breakouts', val: acnePct, color: 'var(--bad)' },
+      { label: 'Dark spots', val: darkPct, color: 'var(--warn)' },
+      { label: 'Redness', val: redPct, color: 'var(--bad)' },
+      { label: 'Fine lines', val: linesPct, color: 'var(--warn)' },
+      { label: 'Oiliness', val: oilPct, color: 'var(--brass)' },
+      { label: 'Dryness', val: dryPct, color: 'var(--brass)' },
     ];
     const rowsEl = document.getElementById('metricRows');
     rowsEl.innerHTML = '';
     rows.forEach(row => {
-      const pct = Math.round(row.val * 100);
       const el = document.createElement('div'); el.className = 'metric-row';
-      el.innerHTML =
-        '<div class="vial"><div class="fill" style="height:0%"></div></div>' +
-        '<div class="metric-label">' + row.label + '</div>' +
-        '<div class="metric-track"><div class="metric-fill" style="width:0%"></div></div>' +
-        '<div class="metric-val">' + pct + '%</div>';
+      el.innerHTML = '<div class="metric-label">' + row.label + '</div>' +
+        '<div class="metric-track"><div class="metric-fill" style="width:0%;background:' + row.color + '"></div></div>' +
+        '<div class="metric-val">' + row.val + '%</div>';
       rowsEl.appendChild(el);
-      requestAnimationFrame(() => {
-        el.querySelector('.fill').style.height = pct + '%';
-        el.querySelector('.metric-fill').style.width = pct + '%';
-      });
+      requestAnimationFrame(() => { el.querySelector('.metric-fill').style.width = row.val + '%'; });
     });
 
-    renderRoutine(skinType, concerns);
+    renderRoutine({ acnePct, darkPct, redPct, linesPct, oilPct, dryPct });
+    return { score, health, concerns };
   }
 
-  const CATALOG = {
-    cleanser: {
-      'Oily-leaning': ['Gel cleanser', 'A light, foaming gel that clears oil without stripping — look for salicylic acid if breakouts show up too.'],
-      'Dry-leaning': ['Cream cleanser', 'A creamy, low-lather wash that leaves the barrier intact — cleanse once a day if skin feels tight.'],
-      'Combination': ['Balancing gel-cream cleanser', 'Something in between: enough to cut oil at the T-zone without drying the cheeks.'],
-      'Balanced': ['Gentle everyday cleanser', 'A simple, fragrance-free cleanser is enough to keep things steady — no need to overdo it.']
-    },
-    treatment: {
-      'Redness': ['Centella or niacinamide serum', 'Calming actives that ease visible redness and support the barrier over a few weeks of use.'],
-      'Uneven texture': ['Gentle exfoliating serum', 'A low-strength AHA/PHA a couple of nights a week can smooth texture — patch test first.'],
-      'Dullness': ['Vitamin C serum', 'A morning antioxidant serum to brighten over time — pair with SPF since it can increase sun sensitivity.'],
-      'Shine, T-zone': ['Niacinamide serum', 'Helps regulate oil production and minimize the look of pores with daily use.'],
-      'Tight, dehydrated feel': ['Hyaluronic acid serum', 'Applied to damp skin, it pulls in moisture and takes the tightness out of dry patches.']
-    },
-    moisturizer: {
-      'Oily-leaning': ['Oil-free gel moisturizer', 'Lightweight hydration that won\u2019t add extra shine through the day.'],
-      'Dry-leaning': ['Rich cream moisturizer', 'Ceramide-based creams help rebuild the barrier and hold onto moisture longer.'],
-      'Combination': ['Lightweight lotion moisturizer', 'Even hydration that doesn\u2019t overload the oilier zones.'],
-      'Balanced': ['Everyday moisturizer', 'A basic, well-formulated moisturizer keeps skin comfortable without extra fuss.']
-    },
-    spf: ['Broad-spectrum SPF 30+', 'The one non-negotiable step, rain or shine — it does more for skin\u2019s long-term look than almost anything else here.']
-  };
+  const TIPS = [
+    { key: 'acnePct', min: 20, mark: '\ud83e\uddf4', title: 'Breakout care', text: 'A gentle salicylic-acid cleanser can help, and try not to pick at active spots — it slows healing and raises scarring risk.' },
+    { key: 'darkPct', min: 15, mark: '\u2728', title: 'Even out tone', text: 'Daily SPF is the biggest lever here; a vitamin C or niacinamide serum can fade marks gradually over weeks.' },
+    { key: 'redPct', min: 32, mark: '\ud83c\udf3f', title: 'Calm redness', text: 'Fragrance-free, low-irritant products and a centella or niacinamide serum tend to help; skip harsh scrubs for now.' },
+    { key: 'linesPct', min: 45, mark: '\u2600\ufe0f', title: 'Protect & smooth', text: 'Consistent SPF plus a retinoid at night (start slow) does more for fine lines than almost anything else.' },
+    { key: 'oilPct', min: 55, mark: '\ud83d\udca7', title: 'Balance oil', text: 'A lightweight, oil-free moisturizer and a niacinamide serum help without over-drying the skin.' },
+    { key: 'dryPct', min: 55, mark: '\ud83d\udca6', title: 'Rebuild hydration', text: 'A cream cleanser plus a ceramide-rich moisturizer helps hold onto moisture and ease tightness.' },
+  ];
 
-  function renderRoutine(skinType, concerns) {
+  function renderRoutine(v) {
     const items = [];
-    items.push(['C', ...CATALOG.cleanser[skinType]]);
-    const mainConcern = concerns.find(c => CATALOG.treatment[c]);
-    if (mainConcern) items.push(['T', ...CATALOG.treatment[mainConcern]]);
-    items.push(['M', ...CATALOG.moisturizer[skinType]]);
-    items.push(['S', ...CATALOG.spf]);
-
+    TIPS.forEach(t => { if (v[t.key] >= t.min) items.push(t); });
+    items.push({ mark: '\ud83e\udd57', title: 'General skin health', text: 'Hydration, sleep, and a consistent routine do more for skin over time than any single product.' });
     const listEl = document.getElementById('productList');
     listEl.innerHTML = '';
-    items.forEach(([mark, name, desc]) => {
+    items.slice(0, 5).forEach(t => {
       const el = document.createElement('div'); el.className = 'product';
-      el.innerHTML = '<div class="product-mark">' + mark + '</div><div><h3>' + name + '</h3><p>' + desc + '</p></div>';
+      el.innerHTML = '<div class="product-mark">' + t.mark + '</div><div><h3>' + t.title + '</h3><p>' + t.text + '</p></div>';
       listEl.appendChild(el);
     });
   }
 
+  // ---- history (per-device, localStorage) ----
+  function saveHistory(m) {
+    const acnePct = Math.round(m.acne*100), darkPct = Math.round(m.darkSpot*100),
+      redPct = Math.round(m.redness*100), linesPct = Math.round(m.fineLines*100);
+    const score = Math.max(38, Math.min(97, Math.round(100 - (acnePct + darkPct + redPct + linesPct) / 4 * 0.85)));
+    const health = score >= 85 ? 'Looking clear' : score >= 70 ? 'Generally good' : score >= 55 ? 'A few things to watch' : 'Needs some care';
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem('smartmirror_history') || '[]'); } catch (e) { list = []; }
+    list.unshift({ date: new Date().toLocaleString(), score, health });
+    list = list.slice(0, 30);
+    try { localStorage.setItem('smartmirror_history', JSON.stringify(list)); } catch (e) {}
+  }
+
+  function renderHistory() {
+    const wrap = document.getElementById('historyList');
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem('smartmirror_history') || '[]'); } catch (e) { list = []; }
+    if (!list.length) { wrap.innerHTML = '<div class="history-empty">No readings yet on this device. Take one from Live scan.</div>'; return; }
+    wrap.innerHTML = list.map((it, i) => (
+      '<div class="h-item"><div class="h-left"><div class="h-date">' + it.date + '</div><div class="h-tag">' + it.health + '</div></div><div class="h-score">' + it.score + '</div></div>'
+    )).join('');
+  }
+  document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+    try { localStorage.removeItem('smartmirror_history'); } catch (e) {}
+    renderHistory();
+  });
+
   scanBtn.addEventListener('click', analyze);
+  renderHistory();
 })();
 </script>
 </body>
